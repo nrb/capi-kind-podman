@@ -7,14 +7,14 @@ reg_name='kind-registry'
 # Port registered on macOS. Still 5000 w/in the container
 reg_port='5001'
 # Name for the kind cluster
-cluster_name='capi'
+cluster_name='capi-test'
 
 insecure_calls () {
     # Tell podman (within the podman VM) that it should connect w/o HTTPS
     # https://github.com/kubernetes-sigs/kind/issues/3468#issuecomment-2353668763
     read -r -d '' registry_conf <<EOF
 [[registry]]
-location = "localhost:$reg"
+location = "localhost:${reg_port}"
 insecure = true
 EOF
     podman machine ssh --username=root sh -c 'cat > /etc/containers/registries.conf.d/local.conf' <<<$registry_conf
@@ -62,7 +62,6 @@ containerdConfigPatches:
 - |-
   [plugins."io.containerd.grpc.v1.cri".registry]
     config_path = "/etc/containerd/certs.d"
-kubeadmConfigPatches:
 EOF
     ;;
   esac
@@ -78,8 +77,8 @@ configure_networking () {
     # Tell the kind control plane nodes that they have to reference the container $reg_name when trying to access localhost:$reg_port
     REGISTRY_DIR="/etc/containerd/certs.d/localhost:${reg_port}"
     for node in $(kind --name ${cluster_name} get nodes); do
-      docker exec "${node}" mkdir -p "${REGISTRY_DIR}"
-      cat <<EOF | docker exec -i "${node}" cp /dev/stdin "${REGISTRY_DIR}/hosts.toml"
+      podman exec "${node}" mkdir -p "${REGISTRY_DIR}"
+      cat <<EOF | podman exec -i "${node}" cp /dev/stdin "${REGISTRY_DIR}/hosts.toml"
 [host."http://${reg_name}:5000"]
 EOF
     done
