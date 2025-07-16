@@ -1,0 +1,25 @@
+{
+  "enable_providers": [
+    "kubeadm-bootstrap",
+    "kubeadm-control-plane",
+    "aws"
+  ],
+  "default_registry": "localhost:5001",
+  "provider_repos": [
+    "/Users/<your username>/projects/cluster-api-provider-aws"
+  ],
+  "kustomize_substitutions": {
+    "EXP_CLUSTER_RESOURCE_SET": "true",
+    "EXP_MACHINE_POOL": "true",
+    "EVENT_BRIDGE_INSTANCE_STATE": "true",
+    "AWS_B64ENCODED_CREDENTIALS": "....",
+    "EXP_EKS_FARGATE": "false",
+    "CAPA_EKS_IAM": "false",
+    "CAPA_EKS_ADD_ROLES": "false",
+    "EXP_BOOTSTRAP_FORMAT_IGNITION": "true"
+  },
+  "extra_args": {
+    "aws": ["--v=2"]
+  }
+}
+
