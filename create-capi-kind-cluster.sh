@@ -39,6 +39,21 @@ create_registry_container () {
     esac
 }
 
+# Upload a configmap to the kind cluster that lets other tools find the registry
+document_registry () {
+  cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: local-registry-hosting
+  namespace: kube-public
+data:
+  localRegistryHosting.v1: |
+    host: "localhost:${reg_port}"
+    help: "https://kind.sigs.k8s.io/docs/user/local-registry/"
+EOF
+}
+
 create_kind_cluster () {
     case $(podman inspect -f '{{.State.Running}}' ${cluster_name}-control-plane 2>/dev/null || true) in
   false)
@@ -94,4 +109,5 @@ EOF
 insecure_calls
 create_registry_container
 create_kind_cluster
+document_registry
 configure_networking
